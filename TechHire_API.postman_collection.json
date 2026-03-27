@@ -1,0 +1,484 @@
+{
+  "info": {
+    "name": "TechHire Premium Job Board API",
+    "_postman_id": "techhire-api-collection-v1",
+    "description": "Complete test suite for the TechHire Job Board API.\n\n## Quick Start\n1. Run the server: `python manage.py runserver`\n2. Seed data: `python manage.py seed_data`\n3. Use the **POST: Get JWT Token (Premium)** request to obtain a token — it is saved automatically to the `premium_token` variable.\n4. Run the remaining requests in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string",
+      "description": "Base URL of the TechHire API server."
+    },
+    {
+      "key": "basic_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token for the basic_user (auto-set by the login request)."
+    },
+    {
+      "key": "premium_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token for the premium_user (auto-set by the login request)."
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST: Get JWT Token (Basic User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.access) {",
+                  "    pm.collectionVariables.set('basic_token', json.access);",
+                  "    pm.test('Token received and saved to basic_token', function() {",
+                  "        pm.expect(json.access).to.be.a('string');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('Login failed — check credentials', function() {",
+                  "        pm.expect(json.access).to.exist;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"basic_user\",\n  \"password\": \"TestPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/token/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "token", ""]
+            },
+            "description": "Obtain a JWT for **basic_user** (Basic tier).\nThe access token is automatically saved to the `basic_token` collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "POST: Get JWT Token (Premium User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.access) {",
+                  "    pm.collectionVariables.set('premium_token', json.access);",
+                  "    pm.test('Token received and saved to premium_token', function() {",
+                  "        pm.expect(json.access).to.be.a('string');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('Login failed — check credentials', function() {",
+                  "        pm.expect(json.access).to.exist;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"premium_user\",\n  \"password\": \"TestPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/token/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "token", ""]
+            },
+            "description": "Obtain a JWT for **premium_user** (Premium tier).\nThe access token is automatically saved to the `premium_token` collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "POST: Register New User (Basic)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"new_basic_user\",\n  \"email\": \"newbasic@example.com\",\n  \"password\": \"SecurePass99!\",\n  \"password2\": \"SecurePass99!\",\n  \"membership_tier\": \"basic\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/accounts/register/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "accounts", "register", ""]
+            },
+            "description": "Register a new Basic-tier user."
+          },
+          "response": []
+        },
+        {
+          "name": "POST: Register New User (Premium)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"new_premium_user\",\n  \"email\": \"newpremium@example.com\",\n  \"password\": \"SecurePass99!\",\n  \"password2\": \"SecurePass99!\",\n  \"membership_tier\": \"premium\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/accounts/register/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "accounts", "register", ""]
+            },
+            "description": "Register a new Premium-tier user."
+          },
+          "response": []
+        },
+        {
+          "name": "GET: My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{premium_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/accounts/me/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "accounts", "me", ""]
+            },
+            "description": "Returns the authenticated user's profile including membership tier."
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH: Upgrade to Premium",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{basic_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/accounts/upgrade/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "accounts", "upgrade", ""]
+            },
+            "description": "Upgrades the authenticated user from Basic to Premium.\n(In production this would be behind a payment gateway.)"
+          },
+          "response": []
+        },
+        {
+          "name": "POST: Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"PASTE_REFRESH_TOKEN_HERE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/token/refresh/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "token", "refresh", ""]
+            },
+            "description": "Exchange a refresh token for a new access token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "GET: Unauthenticated — Locked Fields (Required Deliverable)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('Results array exists', function() {",
+                  "    pm.expect(json.results).to.be.an('array');",
+                  "});",
+                  "if (json.results && json.results.length > 0) {",
+                  "    var job = json.results[0];",
+                  "    pm.test('company_name is locked', function() {",
+                  "        pm.expect(job.company_name).to.eql('\\uD83D\\uDD12 Premium Feature');",
+                  "    });",
+                  "    pm.test('salary_range is locked', function() {",
+                  "        pm.expect(job.salary_range).to.eql('\\uD83D\\uDD12 Premium Feature');",
+                  "    });",
+                  "    pm.test('application_link is locked', function() {",
+                  "        pm.expect(job.application_link).to.eql('\\uD83D\\uDD12 Premium Feature');",
+                  "    });",
+                  "    pm.test('title is visible', function() {",
+                  "        pm.expect(job.title).to.be.a('string').and.not.empty;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", ""]
+            },
+            "description": "**DELIVERABLE REQUEST 2**\n\nNo Authorization header is sent.\nExpected behaviour: all three premium fields (company_name, salary_range, application_link) return `🔒 Premium Feature`.\nPublic fields (title, description, location) are visible to everyone.\n\nThe automated tests in the Tests tab verify the masking is working correctly."
+          },
+          "response": []
+        },
+        {
+          "name": "GET: Search + Filter (Unauthenticated)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/?search=backend&location=Remote&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", ""],
+              "query": [
+                { "key": "search", "value": "backend", "description": "Searches title and description" },
+                { "key": "location", "value": "Remote", "description": "Filter by exact location (case-insensitive)" },
+                { "key": "page", "value": "1", "description": "Page number (10 results per page)" }
+              ]
+            },
+            "description": "Demonstrates search + filter. Fields are still masked because no JWT is provided."
+          },
+          "response": []
+        },
+        {
+          "name": "GET: Authenticated as Premium — Full Data (Required Deliverable)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "if (json.results && json.results.length > 0) {",
+                  "    var job = json.results[0];",
+                  "    pm.test('company_name is REVEALED (not locked)', function() {",
+                  "        pm.expect(job.company_name).to.not.eql('\\uD83D\\uDD12 Premium Feature');",
+                  "        pm.expect(job.company_name).to.be.a('string').and.not.empty;",
+                  "    });",
+                  "    pm.test('salary_range is REVEALED', function() {",
+                  "        pm.expect(job.salary_range).to.not.eql('\\uD83D\\uDD12 Premium Feature');",
+                  "    });",
+                  "    pm.test('application_link is REVEALED', function() {",
+                  "        pm.expect(job.application_link).to.not.eql('\\uD83D\\uDD12 Premium Feature');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{premium_token}}",
+                "description": "JWT for premium_user — injected automatically after running the login request."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", ""]
+            },
+            "description": "**DELIVERABLE REQUEST 3**\n\nSends a valid JWT belonging to a Premium-tier user.\nExpected behaviour: company_name, salary_range, and application_link all return real data.\n\nMake sure you have run the **POST: Get JWT Token (Premium User)** request first so the `premium_token` variable is populated."
+          },
+          "response": []
+        },
+        {
+          "name": "GET: Authenticated as Basic — Still Locked",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "if (json.results && json.results.length > 0) {",
+                  "    var job = json.results[0];",
+                  "    pm.test('company_name is still locked for Basic users', function() {",
+                  "        pm.expect(job.company_name).to.eql('\\uD83D\\uDD12 Premium Feature');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{basic_token}}",
+                "description": "JWT for basic_user — injected automatically after running the basic login request."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", ""]
+            },
+            "description": "Sends a valid JWT, but for a Basic-tier user.\nExpected behaviour: premium fields are still masked — having a token is not enough, you need Premium tier."
+          },
+          "response": []
+        },
+        {
+          "name": "GET: Single Job Detail — Premium (Required Deliverable)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test('id field present', function() {",
+                  "    pm.expect(json.id).to.exist;",
+                  "});",
+                  "pm.test('title field present', function() {",
+                  "    pm.expect(json.title).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('company_name is REVEALED for premium user', function() {",
+                  "    pm.expect(json.company_name).to.not.eql('\\uD83D\\uDD12 Premium Feature');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{premium_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "1", ""]
+            },
+            "description": "**DELIVERABLE REQUEST 4**\n\nRetrieve a single job posting by ID.\nChange the `1` in the URL to any valid job ID from the list endpoint.\nWith a Premium JWT attached, all fields are revealed."
+          },
+          "response": []
+        },
+        {
+          "name": "GET: Single Job Detail — Unauthenticated",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "1", ""]
+            },
+            "description": "Retrieve a single job posting without a token. Premium fields are masked."
+          },
+          "response": []
+        },
+        {
+          "name": "GET: Jobs — Search by Keyword",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/?search=engineer",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", ""],
+              "query": [
+                { "key": "search", "value": "engineer" }
+              ]
+            },
+            "description": "Full-text search across title and description fields."
+          },
+          "response": []
+        },
+        {
+          "name": "GET: Jobs — Filter by Location",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/?location=Remote",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", ""],
+              "query": [
+                { "key": "location", "value": "Remote" }
+              ]
+            },
+            "description": "Filter jobs by location (case-insensitive exact match)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET: Jobs — Combined Search + Filter + Pagination",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/?search=engineer&location=Remote&page=1&ordering=-created_at",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", ""],
+              "query": [
+                { "key": "search", "value": "engineer" },
+                { "key": "location", "value": "Remote" },
+                { "key": "page", "value": "1" },
+                { "key": "ordering", "value": "-created_at" }
+              ]
+            },
+            "description": "Demonstrates combining search, location filter, custom ordering, and pagination in a single request."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
