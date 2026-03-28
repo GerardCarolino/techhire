@@ -1,15 +1,19 @@
 """
-Seed the database with realistic sample job postings and test users.
+Management command: seed_data
+
+Populates the database with a representative set of job postings and
+two test user accounts (one per membership tier). Safe to run multiple
+times -- existing records are skipped rather than duplicated.
 
 Usage:
     python manage.py seed_data
-    python manage.py seed_data --clear     # wipe existing data first
+    python manage.py seed_data --clear
 """
-import random
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from accounts.models import UserProfile
+
 from jobs.models import JobPosting
+
 
 JOBS = [
     {
@@ -22,7 +26,7 @@ JOBS = [
         ),
         "location": "Remote",
         "company_name": "Stripe",
-        "salary_range": "$160,000 – $210,000",
+        "salary_range": "$160,000 - $210,000",
         "application_link": "https://stripe.com/jobs/senior-backend-engineer",
     },
     {
@@ -35,20 +39,20 @@ JOBS = [
         ),
         "location": "San Francisco, CA",
         "company_name": "Figma",
-        "salary_range": "$140,000 – $185,000",
+        "salary_range": "$140,000 - $185,000",
         "application_link": "https://figma.com/careers/frontend-engineer",
     },
     {
         "title": "Staff Machine Learning Engineer",
         "description": (
             "Lead the development of ML infrastructure that powers our recommendation "
-            "and ranking systems serving 500 M+ users. You will mentor junior engineers, "
+            "and ranking systems serving 500M+ users. You will mentor junior engineers, "
             "drive architectural decisions, and collaborate with research scientists. "
             "PhD or equivalent industry experience in ML required."
         ),
         "location": "New York, NY",
         "company_name": "Spotify",
-        "salary_range": "$220,000 – $280,000",
+        "salary_range": "$220,000 - $280,000",
         "application_link": "https://spotify.com/jobs/staff-ml-engineer",
     },
     {
@@ -60,7 +64,7 @@ JOBS = [
         ),
         "location": "Remote",
         "company_name": "Cloudflare",
-        "salary_range": "$150,000 – $195,000",
+        "salary_range": "$150,000 - $195,000",
         "application_link": "https://cloudflare.com/careers/devops-engineer",
     },
     {
@@ -72,20 +76,20 @@ JOBS = [
         ),
         "location": "Austin, TX",
         "company_name": "Apple",
-        "salary_range": "$175,000 – $230,000",
+        "salary_range": "$175,000 - $230,000",
         "application_link": "https://jobs.apple.com/ios-engineer",
     },
     {
         "title": "Full-Stack Engineer (Node + React)",
         "description": (
-            "Help us grow our SaaS platform from 10 K to 1 M users. You will contribute to "
+            "Help us grow our SaaS platform from 10K to 1M users. You will contribute to "
             "both the Node.js API and the React dashboard, write integration tests, and "
             "participate in on-call rotations. We value pragmatism, clear communication, "
             "and a product-minded engineering culture."
         ),
         "location": "Remote",
         "company_name": "Linear",
-        "salary_range": "$130,000 – $170,000",
+        "salary_range": "$130,000 - $170,000",
         "application_link": "https://linear.app/careers/full-stack-engineer",
     },
     {
@@ -98,7 +102,7 @@ JOBS = [
         ),
         "location": "Seattle, WA",
         "company_name": "Amazon",
-        "salary_range": "$180,000 – $240,000",
+        "salary_range": "$180,000 - $240,000",
         "application_link": "https://amazon.jobs/security-engineer",
     },
     {
@@ -111,11 +115,11 @@ JOBS = [
         ),
         "location": "Chicago, IL",
         "company_name": "Brex",
-        "salary_range": "$135,000 – $175,000",
+        "salary_range": "$135,000 - $175,000",
         "application_link": "https://brex.com/careers/data-engineer",
     },
     {
-        "title": "Engineering Manager — Platform",
+        "title": "Engineering Manager, Platform",
         "description": (
             "Lead a team of 6 platform engineers responsible for shared infrastructure, "
             "internal tooling, and developer experience. You will run quarterly planning, "
@@ -124,11 +128,11 @@ JOBS = [
         ),
         "location": "Remote",
         "company_name": "Vercel",
-        "salary_range": "$200,000 – $260,000",
+        "salary_range": "$200,000 - $260,000",
         "application_link": "https://vercel.com/careers/engineering-manager-platform",
     },
     {
-        "title": "Backend Engineer — Payments",
+        "title": "Backend Engineer, Payments",
         "description": (
             "Work on the core payments platform processing billions of dollars monthly. "
             "Responsibilities include designing fault-tolerant microservices, integrating "
@@ -137,19 +141,19 @@ JOBS = [
         ),
         "location": "New York, NY",
         "company_name": "Ramp",
-        "salary_range": "$155,000 – $200,000",
+        "salary_range": "$155,000 - $200,000",
         "application_link": "https://ramp.com/careers/backend-engineer-payments",
     },
     {
         "title": "Junior Frontend Developer",
         "description": (
-            "A great opportunity to start your frontend career. You will work alongside "
+            "A strong opportunity to start your frontend career. You will work alongside "
             "senior engineers to build React components, fix bugs, and improve test coverage. "
             "We offer mentorship, structured onboarding, and a clear growth path."
         ),
         "location": "Remote",
         "company_name": "Notion",
-        "salary_range": "$80,000 – $110,000",
+        "salary_range": "$80,000 - $110,000",
         "application_link": "https://notion.so/careers/junior-frontend-developer",
     },
     {
@@ -162,10 +166,11 @@ JOBS = [
         ),
         "location": "San Francisco, CA",
         "company_name": "Datadog",
-        "salary_range": "$165,000 – $215,000",
+        "salary_range": "$165,000 - $215,000",
         "application_link": "https://datadog.com/careers/sre",
     },
 ]
+
 
 TEST_USERS = [
     {
@@ -184,24 +189,31 @@ TEST_USERS = [
 
 
 class Command(BaseCommand):
-    help = "Seed the database with sample job postings and test users."
+    help = "Seed the database with sample job postings and test user accounts."
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--clear",
             action="store_true",
-            help="Delete all existing JobPostings and non-superuser accounts before seeding.",
+            help="Delete all existing job postings and non-superuser accounts before seeding.",
         )
 
     def handle(self, *args, **options):
         if options["clear"]:
-            deleted, _ = JobPosting.objects.all().delete()
-            self.stdout.write(self.style.WARNING(f"  Cleared {deleted} job postings."))
-            User.objects.filter(is_superuser=False).delete()
-            self.stdout.write(self.style.WARNING("  Cleared non-superuser accounts."))
+            deleted_jobs, _ = JobPosting.objects.all().delete()
+            self.stdout.write(f"Cleared {deleted_jobs} job posting(s).")
 
-        # ── Create job postings ───────────────────────────────────────────────
-        created_jobs = 0
+            deleted_users = User.objects.filter(is_superuser=False).delete()[0]
+            self.stdout.write(f"Cleared {deleted_users} user account(s).")
+
+        self._seed_jobs()
+        self._seed_users()
+
+        self.stdout.write(self.style.SUCCESS("Seed complete."))
+
+    def _seed_jobs(self):
+        created_count = 0
+
         for job_data in JOBS:
             _, created = JobPosting.objects.get_or_create(
                 title=job_data["title"],
@@ -209,33 +221,33 @@ class Command(BaseCommand):
                 defaults=job_data,
             )
             if created:
-                created_jobs += 1
+                created_count += 1
+            else:
+                self.stdout.write(
+                    f"Skipped existing posting: {job_data['title']}"
+                )
 
-        self.stdout.write(self.style.SUCCESS(f"✅  Created {created_jobs} job postings."))
+        self.stdout.write(
+            self.style.SUCCESS(f"Created {created_count} job posting(s).")
+        )
 
-        # ── Create test users ─────────────────────────────────────────────────
-        for u in TEST_USERS:
+    def _seed_users(self):
+        for user_data in TEST_USERS:
             user, created = User.objects.get_or_create(
-                username=u["username"],
-                defaults={"email": u["email"]},
+                username=user_data["username"],
+                defaults={"email": user_data["email"]},
             )
+
             if created:
-                user.set_password(u["password"])
+                user.set_password(user_data["password"])
                 user.save()
-                user.profile.membership_tier = u["tier"]
+                user.profile.membership_tier = user_data["tier"]
                 user.profile.save()
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"✅  Created user '{u['username']}' (tier: {u['tier']}) "
-                        f"— password: {u['password']}"
+                        f"Created user: {user_data['username']} "
+                        f"(tier: {user_data['tier']}, password: {user_data['password']})"
                     )
                 )
             else:
-                self.stdout.write(f"⏭   User '{u['username']}' already exists, skipped.")
-
-        self.stdout.write(self.style.SUCCESS("\n🎉  Seed complete!"))
-        self.stdout.write(
-            "\nTest credentials:\n"
-            "  basic_user   / TestPass123!  →  Basic tier (fields masked)\n"
-            "  premium_user / TestPass123!  →  Premium tier (fields revealed)\n"
-        )
+                self.stdout.write(f"Skipped existing user: {user_data['username']}")

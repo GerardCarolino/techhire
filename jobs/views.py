@@ -1,5 +1,6 @@
 from rest_framework import viewsets, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
+
 from .models import JobPosting
 from .serializers import JobPostingSerializer
 from .filters import JobPostingFilter
@@ -7,38 +8,39 @@ from .filters import JobPostingFilter
 
 class JobPostingViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    /api/jobs/        – list all active job postings
-    /api/jobs/<id>/   – retrieve a single job posting
+    Read-only endpoint for browsing active job postings.
 
-    Authentication is optional. The serializer applies field-level masking
-    automatically based on the caller's membership tier:
+    List:   GET /api/jobs/
+    Detail: GET /api/jobs/<id>/
 
-      • No token  →  premium fields masked
-      • Basic JWT →  premium fields masked
-      • Premium JWT →  full data returned
+    Authentication is optional. When a valid JWT is provided, the serializer
+    inspects the caller's membership tier and reveals or masks the three
+    premium fields accordingly. This view has no knowledge of that logic --
+    masking is the serializer's responsibility.
 
-    Search & Filter
-    ───────────────
-    ?search=<text>         searches title + description (case-insensitive)
-    ?location=<city>       filter by exact location
-    ?location_in=A,B,C     filter by multiple locations
-    ?created_after=<date>  filter by date (ISO 8601)
-    ?created_before=<date> filter by date (ISO 8601)
-    ?ordering=created_at   change ordering (default: -created_at, newest first)
-    ?page=<n>              page number (10 results per page)
+    Supported query parameters:
+
+        search          Full-text match against title and description.
+        location        Exact location filter (case-insensitive).
+        location_in     Comma-separated list of locations.
+        created_after   ISO 8601 datetime lower bound on created_at.
+        created_before  ISO 8601 datetime upper bound on created_at.
+        ordering        Field to sort by. Prefix with "-" to reverse.
+                        Accepted values: created_at, title.
+                        Default: -created_at (newest first).
+        page            Page number. Each page contains 10 results.
     """
 
     queryset = JobPosting.objects.filter(is_active=True).order_by("-created_at")
     serializer_class = JobPostingSerializer
     permission_classes = [permissions.AllowAny]
 
-    # ── Search, filter, ordering ──────────────────────────────────────────────
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
     filterset_class = JobPostingFilter
-    search_fields = ["title", "description"]          # ?search=
-    ordering_fields = ["created_at", "title"]         # ?ordering=
-    ordering = ["-created_at"]                        # default: newest first
+    search_fields = ["title", "description"]
+    ordering_fields = ["created_at", "title"]
+    ordering = ["-created_at"]
